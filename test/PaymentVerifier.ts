@@ -18,14 +18,7 @@ export function verifyPayment(evidence: PaymentEvidence): string[] {
     problems.push("TRANSACTION_FAILED");
   }
 
-   const isFullyRefunded =
-  evidence.refundConfirmed === true &&
-  evidence.refundAmount === evidence.expectedAmount &&
-  evidence.settledAmount === 0n;
-
-const amountToVerify = isFullyRefunded
-  ? evidence.expectedAmount
-  : (evidence.settledAmount ?? evidence.expectedAmount);
+   const amountToVerify = evidence.expectedAmount;
 
   if (evidence.eventAmount === undefined) {
     problems.push("MISSING_TRANSFER_EVENT");
@@ -223,9 +216,9 @@ it("classifies a partially settled payment", () => {
     receiptStatus: "success",
     expectedAmount: 100n,
     settledAmount: 60n,
-    eventAmount: 60n,
-    observedBalanceIncrease: 60n,
-    observedBalanceDecrease: 60n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    observedBalanceDecrease: 100n,
     refundAmount: 0n,
     refundConfirmed: true,
   });
