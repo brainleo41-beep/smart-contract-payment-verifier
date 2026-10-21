@@ -16,6 +16,7 @@ type Evidence = {
 };
 type Scenario = Evidence & {
   name: string;
+  groundTruth: "valid" | "inconsistent" | "unresolved";
   expectedDetection: {
     receiptOnly: boolean;
     receiptAndEvent: boolean;
@@ -44,6 +45,7 @@ function receiptAndEvent(e: Evidence): string[] {
 const scenarios: Scenario[] = [
   {
     name: "Consistent transfer",
+    groundTruth: "valid",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
@@ -57,6 +59,7 @@ const scenarios: Scenario[] = [
   },
   {
     name: "Incorrect event amount",
+    groundTruth:"inconsistent",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 80n,
@@ -70,6 +73,7 @@ const scenarios: Scenario[] = [
   },
   {
     name: "Balance contradicts event",
+    groundTruth: "inconsistent",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
@@ -83,6 +87,7 @@ const scenarios: Scenario[] = [
   },
 {
   name: "Sender balance decrease mismatch",
+  groundTruth: "inconsistent",
   receiptStatus: "success",
   expectedAmount: 100n,
   eventAmount: 100n,
@@ -97,6 +102,7 @@ const scenarios: Scenario[] = [
 },
 {
   name: "Partial settlement",
+  groundTruth: "inconsistent",
   receiptStatus: "success",
   expectedAmount: 100n,
   eventAmount: 100n,
@@ -112,6 +118,7 @@ const scenarios: Scenario[] = [
 
   {
     name: "Unconfirmed refund",
+    groundTruth: "inconsistent",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
@@ -128,6 +135,7 @@ const scenarios: Scenario[] = [
 
   {
     name: "Missing transfer event",
+    groundTruth: "unresolved",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: undefined,
@@ -141,6 +149,7 @@ const scenarios: Scenario[] = [
   },
   {
     name: "Missing settlement evidence",
+    groundTruth: "unresolved",
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
@@ -154,6 +163,7 @@ const scenarios: Scenario[] = [
   },
   {
     name: "Failed transaction",
+    groundTruth: "inconsistent",
     receiptStatus: "reverted",
     expectedAmount: 100n,
     eventAmount: undefined,
@@ -207,8 +217,9 @@ const reconciliationDetected =
   }
 });
 
+
 describe("Verification metrics summary", () => {
-  it("reports detection counts for the current test scenarios", () => {
+  it("reports detection performance against ground truth", () => {
     const approaches = [
       {
         name: "Receipt only",
@@ -228,18 +239,60 @@ describe("Verification metrics summary", () => {
       },
     ];
 
-    console.log("\n=== Verification experiment summary ===");
+    console.log("\n=== Ground-truth evaluation ===");
     console.log("Total scenarios:", scenarios.length);
 
     for (const approach of approaches) {
-      const detectedCount = scenarios.filter(
+      const flagged = scenarios.filter(
         (s) => approach.detected(s),
+      );
+
+      const truePositives = flagged.filter(
+        (s) => s.groundTruth === "inconsistent",
       ).length;
 
+      const falsePositives = flagged.filter(
+        (s) => s.groundTruth === "valid",
+      ).length;
+
+      const unresolvedFlagged = flagged.filter(
+        (s) => s.groundTruth === "unresolved",
+      ).length;
+
+      const inconsistentTotal = scenarios.filter(
+        (s) => s.groundTruth === "inconsistent",
+      ).length;
+
+      const validTotal = scenarios.filter(
+        (s) => s.groundTruth === "valid",
+      ).length;
+
+      const detectionRate =
+        inconsistentTotal === 0
+          ? 0
+          : (truePositives / inconsistentTotal) * 100;
+
+      const falsePositiveRate =
+        validTotal === 0
+          ? 0
+          : (falsePositives / validTotal) * 100;
+
+      console.log(`\n${approach.name}`);
       console.log(
-        `${approach.name}: ${detectedCount}/${scenarios.length} scenarios flagged`,
+        `True positives: ${truePositives}/${inconsistentTotal}`,
+      );
+      console.log(
+        `Detection rate: ${detectionRate.toFixed(1)}%`,
+      );
+      console.log(
+        `False positives: ${falsePositives}/${validTotal}`,
+      );
+      console.log(
+        `False-positive rate: ${falsePositiveRate.toFixed(1)}%`,
+      );
+      console.log(
+        `Unresolved scenarios flagged: ${unresolvedFlagged}`,
       );
     }
   });
 });
-
