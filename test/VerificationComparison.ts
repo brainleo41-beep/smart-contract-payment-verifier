@@ -206,3 +206,40 @@ const reconciliationDetected =
     });
   }
 });
+
+describe("Verification metrics summary", () => {
+  it("reports detection counts for the current test scenarios", () => {
+    const approaches = [
+      {
+        name: "Receipt only",
+        detected: (s: Scenario) =>
+          receiptOnly(s).length > 0,
+      },
+      {
+        name: "Receipt + event",
+        detected: (s: Scenario) =>
+          receiptAndEvent(s).length > 0,
+      },
+      {
+        name: "Reconciliation",
+        detected: (s: Scenario) =>
+          verifyPayment(s).length > 0 ||
+          classifyPayment(s) === "inconsistent",
+      },
+    ];
+
+    console.log("\n=== Verification experiment summary ===");
+    console.log("Total scenarios:", scenarios.length);
+
+    for (const approach of approaches) {
+      const detectedCount = scenarios.filter(
+        (s) => approach.detected(s),
+      ).length;
+
+      console.log(
+        `${approach.name}: ${detectedCount}/${scenarios.length} scenarios flagged`,
+      );
+    }
+  });
+});
+
