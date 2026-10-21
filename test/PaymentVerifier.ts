@@ -62,6 +62,18 @@ export function classifyPayment(
     return "inconsistent";
   }
 
+ 
+  // Contradictory available evidence takes priority over missing evidence.
+  const hasContradiction = problems.some(
+    (problem) =>
+      problem !== "MISSING_TRANSFER_EVENT" &&
+      problem !== "MISSING_SETTLEMENT_EVIDENCE",
+  );
+
+  if (hasContradiction) {
+    return "inconsistent";
+  }
+
   // Missing evidence prevents a reliable final classification.
   const hasMissingEvidence =
     evidence.eventAmount === undefined ||
@@ -74,7 +86,6 @@ export function classifyPayment(
   if (problems.length > 0) {
     return "inconsistent";
   }
-
   const settled = evidence.settledAmount;
   const refunded = evidence.refundAmount;
   const refundConfirmed = evidence.refundConfirmed === true;
@@ -317,6 +328,18 @@ it("does not classify an unconfirmed refund as refunded", () => {
     observedBalanceIncrease: 100n,
     refundAmount: 100n,
     refundConfirmed: false,
+  });
+
+  assert.equal(result, "inconsistent");
+});
+
+it("classifies contradictory evidence as inconsistent even when settlement evidence is missing", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    eventAmount: undefined,
+    observedBalanceIncrease: 70n,
+    settledAmount: undefined,
   });
 
   assert.equal(result, "inconsistent");
