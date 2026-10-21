@@ -1,8 +1,9 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { verifyPayment } from "./PaymentVerifier.js";
-
+import {verifyPayment,
+classifyPayment,
+} from "./PaymentVerifier.js";
 type Evidence = {
   receiptStatus: "success" | "reverted";
   expectedAmount: bigint;
@@ -10,6 +11,8 @@ type Evidence = {
   observedBalanceIncrease: bigint;
   observedBalanceDecrease?: bigint;
   settledAmount?: bigint;
+  refundAmount?: bigint;
+  refundConfirmed?: boolean;
 };
 type Scenario = Evidence & {
   name: string;
@@ -106,6 +109,23 @@ const scenarios: Scenario[] = [
     reconciliation: true,
   },
 },
+
+  {
+    name: "Unconfirmed refund",
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    settledAmount: 0n,
+    refundAmount: 100n,
+    refundConfirmed: false,
+    expectedDetection: {
+      receiptOnly: false,
+      receiptAndEvent: false,
+      reconciliation: true,
+    },
+  },
+
   {
     name: "Missing transfer event",
     receiptStatus: "success",
@@ -156,8 +176,11 @@ describe("Verification approach comparison", () => {
       const eventDetected =
         receiptAndEvent(scenario).length > 0;
 
-      const reconciliationDetected =
-        verifyPayment(scenario).length > 0;
+      const classification = classifyPayment(scenario);
+
+const reconciliationDetected =
+  verifyPayment(scenario).length > 0 ||
+  classification === "inconsistent";
 
       console.log(
         scenario.name,
