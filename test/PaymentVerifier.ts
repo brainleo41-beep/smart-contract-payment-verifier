@@ -50,8 +50,9 @@ export function classifyPayment(
 ):
   | "settled"
   | "partially_settled"
-  | "refunded"
-  | "inconsistent" {
+  |  "refunded"
+  | "inconsistent"
+  | "unresolved" {
   const problems = verifyPayment(evidence);
 
   if (problems.length > 0) {
@@ -62,8 +63,8 @@ export function classifyPayment(
   const refunded = evidence.refundAmount;
   const refundConfirmed = evidence.refundConfirmed === true;
 
-  if (settled === undefined) {
-    return "inconsistent";
+    if (settled === undefined) {
+    return "unresolved";
   }
 
   if (settled < 0n || settled > evidence.expectedAmount) {
@@ -237,5 +238,15 @@ it("rejects a full refund claim with a nonzero settled amount", () => {
   });
 
   assert.equal(result, "inconsistent");
+});
+it("classifies missing settlement evidence as unresolved", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+  });
+
+  assert.equal(result, "unresolved");
 });
 });
