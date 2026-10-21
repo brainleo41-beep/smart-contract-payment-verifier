@@ -245,19 +245,19 @@ it("classifies a fully refunded payment", () => {
 
   assert.equal(result, "refunded");
 });
-it("classifies a partially settled payment", () => {
+it("classifies a partial payment as inconsistent when full settlement is required", () => {
   const result = classifyPayment({
     receiptStatus: "success",
     expectedAmount: 100n,
     settledAmount: 60n,
     eventAmount: 100n,
-    observedBalanceIncrease: 100n,
+    observedBalanceIncrease: 60n,
     observedBalanceDecrease: 100n,
     refundAmount: 0n,
     refundConfirmed: true,
   });
 
-  assert.equal(result, "partially_settled");
+  assert.equal(result, "inconsistent");
 });
 it("rejects a full refund claim with a nonzero settled amount", () => {
   const result = classifyPayment({
