@@ -53,7 +53,21 @@ export function classifyPayment(
   |  "refunded"
   | "inconsistent"
   | "unresolved" {
-  const problems = verifyPayment(evidence);
+    const problems = verifyPayment(evidence);
+
+  // A failed transaction is a known failure, not an unresolved outcome.
+  if (evidence.receiptStatus !== "success") {
+    return "inconsistent";
+  }
+
+  // Missing evidence prevents a reliable final classification.
+  const hasMissingEvidence =
+    evidence.eventAmount === undefined ||
+    evidence.settledAmount === undefined;
+
+  if (hasMissingEvidence) {
+    return "unresolved";
+  }
 
   if (problems.length > 0) {
     return "inconsistent";
@@ -244,6 +258,28 @@ it("classifies missing settlement evidence as unresolved", () => {
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+  });
+
+  assert.equal(result, "unresolved");
+});
+it("keeps a failed transaction inconsistent when its event is missing", () => {
+  const result = classifyPayment({
+    receiptStatus: "reverted",
+    expectedAmount: 100n,
+    settledAmount: 0n,
+    eventAmount: undefined,
+    observedBalanceIncrease: 0n,
+  });
+
+  assert.equal(result, "inconsistent");
+});
+it("classifies a missing transfer event as unresolved", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    settledAmount: 100n,
+    eventAmount: undefined,
     observedBalanceIncrease: 100n,
   });
 
