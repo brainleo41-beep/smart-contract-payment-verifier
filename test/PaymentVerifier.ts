@@ -262,4 +262,17 @@ it("rejects an incomplete refund reported as a full refund", () => {
 
   assert.equal(result, "inconsistent");
 });
+it("does not classify an unconfirmed refund as refunded", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    settledAmount: 0n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    refundAmount: 100n,
+    refundConfirmed: false,
+  });
+
+  assert.equal(result, "inconsistent");
+});
 });
