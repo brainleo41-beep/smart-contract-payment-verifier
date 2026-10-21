@@ -56,6 +56,53 @@ const scenarios: Scenario[] = [
       receiptAndEvent: false,
       reconciliation: false,
     },
+   },
+  {
+    name: "Consistent transfer of 250",
+    groundTruth: "valid",
+    receiptStatus: "success",
+    expectedAmount: 250n,
+    eventAmount: 250n,
+    observedBalanceIncrease: 250n,
+    observedBalanceDecrease: 250n,
+    settledAmount: 250n,
+    expectedDetection: {
+      receiptOnly: false,
+      receiptAndEvent: false,
+      reconciliation: false,
+    },
+  },
+  {
+    name: "Consistent transfer of 500",
+    groundTruth: "valid",
+    receiptStatus: "success",
+    expectedAmount: 500n,
+    eventAmount: 500n,
+    observedBalanceIncrease: 500n,
+    observedBalanceDecrease: 500n,
+    settledAmount: 500n,
+    expectedDetection: {
+      receiptOnly: false,
+      receiptAndEvent: false,
+      reconciliation: false,
+    },
+  },
+  {
+    name: "Confirmed full refund",
+    groundTruth: "valid",
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    observedBalanceDecrease: 100n,
+    settledAmount: 0n,
+    refundAmount: 100n,
+    refundConfirmed: true,
+    expectedDetection: {
+      receiptOnly: false,
+      receiptAndEvent: false,
+      reconciliation: false,
+    },
   },
   {
     name: "Incorrect event amount",
@@ -176,7 +223,24 @@ const scenarios: Scenario[] = [
     },
   },
 ];
+describe("Ground-truth dataset", () => {
+  it("contains the expected number of labeled scenarios", () => {
+    assert.equal(
+      scenarios.filter((s) => s.groundTruth === "valid").length,
+      4,
+    );
 
+    assert.equal(
+      scenarios.filter((s) => s.groundTruth === "inconsistent").length,
+      6,
+    );
+
+    assert.equal(
+      scenarios.filter((s) => s.groundTruth === "unresolved").length,
+      2,
+    );
+  });
+});
 describe("Verification approach comparison", () => {
   for (const scenario of scenarios) {
     it(`compares approaches: ${scenario.name}`, () => {
