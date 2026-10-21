@@ -249,4 +249,17 @@ it("classifies missing settlement evidence as unresolved", () => {
 
   assert.equal(result, "unresolved");
 });
+it("rejects an incomplete refund reported as a full refund", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    settledAmount: 0n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    refundAmount: 60n,
+    refundConfirmed: true,
+  });
+
+  assert.equal(result, "inconsistent");
+});
 });
