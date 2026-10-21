@@ -92,6 +92,20 @@ const scenarios: Scenario[] = [
     reconciliation: true,
   },
 },
+{
+  name: "Partial settlement",
+  receiptStatus: "success",
+  expectedAmount: 100n,
+  eventAmount: 100n,
+  observedBalanceIncrease: 60n,
+  observedBalanceDecrease: 100n,
+  settledAmount: 60n,
+  expectedDetection: {
+    receiptOnly: false,
+    receiptAndEvent: false,
+    reconciliation: true,
+  },
+},
   {
     name: "Missing transfer event",
     receiptStatus: "success",
