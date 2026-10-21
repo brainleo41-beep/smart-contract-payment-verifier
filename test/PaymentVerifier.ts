@@ -31,13 +31,11 @@ export function verifyPayment(evidence: PaymentEvidence): string[] {
   if (evidence.observedBalanceIncrease !== amountToVerify) {
     problems.push("BALANCE_CHANGE_MISMATCH");
   }
-   if (
-    evidence.observedBalanceDecrease !== undefined &&
-    evidence.observedBalanceDecrease !== amountToVerify
-  ) {
-    problems.push("SENDER_BALANCE_CHANGE_MISMATCH");
-  }
-
+if (evidence.observedBalanceDecrease !== undefined &&
+  evidence.observedBalanceDecrease !== amountToVerify
+) {
+  problems.push("SENDER_BALANCE_CHANGE_MISMATCH");
+}
   if (
     evidence.eventAmount !== undefined &&
     evidence.eventAmount !== evidence.observedBalanceIncrease

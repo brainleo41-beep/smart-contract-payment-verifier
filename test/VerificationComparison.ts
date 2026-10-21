@@ -8,9 +8,9 @@ type Evidence = {
   expectedAmount: bigint;
   eventAmount: bigint | undefined;
   observedBalanceIncrease: bigint;
+  observedBalanceDecrease?: bigint;
   settledAmount?: bigint;
 };
-
 type Scenario = Evidence & {
   name: string;
   expectedDetection: {
@@ -78,6 +78,20 @@ const scenarios: Scenario[] = [
       reconciliation: true,
     },
   },
+{
+  name: "Sender balance decrease mismatch",
+  receiptStatus: "success",
+  expectedAmount: 100n,
+  eventAmount: 100n,
+  observedBalanceIncrease: 100n,
+  observedBalanceDecrease: 70n,
+  settledAmount: 100n,
+  expectedDetection: {
+    receiptOnly: false,
+    receiptAndEvent: false,
+    reconciliation: true,
+  },
+},
   {
     name: "Missing transfer event",
     receiptStatus: "success",
