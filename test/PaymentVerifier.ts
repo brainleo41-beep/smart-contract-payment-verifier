@@ -25,7 +25,9 @@ export function verifyPayment(evidence: PaymentEvidence): string[] {
   } else if (evidence.eventAmount !== amountToVerify) {
     problems.push("EVENT_AMOUNT_MISMATCH");
   }
-
+  if (evidence.settledAmount === undefined) {
+    problems.push("MISSING_SETTLEMENT_EVIDENCE");
+  }
   if (evidence.observedBalanceIncrease !== amountToVerify) {
     problems.push("BALANCE_CHANGE_MISMATCH");
   }
@@ -119,32 +121,37 @@ export function classifyPayment(
   return "inconsistent";
 }
 describe("PaymentVerifier", () => {
-  it("accepts consistent payment evidence", () => {
-    const result = verifyPayment({receiptStatus: "success",
-      expectedAmount: 100n,
-      eventAmount: 100n,
-      observedBalanceIncrease: 100n,
-    });
-
-    assert.deepEqual(result, []);
+ 
+it("accepts consistent payment evidence", () => {
+  const result = verifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    settledAmount: 100n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
   });
 
-  it("detects an incorrect expected payment amount", () => {
-    const result = verifyPayment({receiptStatus: "success",
-      expectedAmount: 120n,
-      eventAmount: 100n,
-      observedBalanceIncrease: 100n,
-    });
+  assert.deepEqual(result, []);
+});
 
-    assert.deepEqual(result, [
-      "EVENT_AMOUNT_MISMATCH",
-      "BALANCE_CHANGE_MISMATCH",
-    ]);
+it("detects an incorrect expected payment amount", () => {
+  const result = verifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 120n,
+    settledAmount: 100n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
   });
 
-  it("detects a missing event", () => {
+  assert.deepEqual(result, [
+    "EVENT_AMOUNT_MISMATCH",
+    "BALANCE_CHANGE_MISMATCH",
+  ]);
+});
+ it("detects a missing event", () => {
     const result = verifyPayment({receiptStatus: "success",
       expectedAmount: 100n,
+      settledAmount: 100n,
       eventAmount: undefined,
       observedBalanceIncrease: 100n,
     });
@@ -155,6 +162,7 @@ it("detects a failed transaction receipt", () => {
   const result = verifyPayment({
     receiptStatus: "reverted",
     expectedAmount: 100n,
+    settledAmount: 0n,
     eventAmount: undefined,
     observedBalanceIncrease: 0n,
   });
@@ -170,6 +178,7 @@ it("detects an event and balance inconsistency", () => {
     receiptStatus: "success",
     expectedAmount: 100n,
     eventAmount: 100n,
+    settledAmount: 100n,
     observedBalanceIncrease: 70n,
   });
 
@@ -204,6 +213,7 @@ it("detects an incorrect sender balance decrease", () => {
   const result = verifyPayment({
     receiptStatus: "success",
     expectedAmount: 100n,
+    settledAmount: 100n,
     eventAmount: 100n,
     observedBalanceIncrease: 100n,
     observedBalanceDecrease: 80n,

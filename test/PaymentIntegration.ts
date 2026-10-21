@@ -46,13 +46,14 @@ describe("PaymentIntegration", async () => {
     const observedBalanceIncrease = recipientAfter - recipientBefore;
     const observedBalanceDecrease = senderBefore - senderAfter;
 
-    const problems = verifyPayment({
-      receiptStatus: receipt.status,
-      expectedAmount,
-      eventAmount,
-      observedBalanceIncrease,
-      observedBalanceDecrease,
-    });
+   const problems = verifyPayment({
+  receiptStatus: receipt.status,
+  expectedAmount,
+  settledAmount: observedBalanceIncrease,
+  eventAmount,
+  observedBalanceIncrease,
+  observedBalanceDecrease,
+});
 
     console.log("Integration transaction:", hash);
     console.log("Receipt status:", receipt.status);
