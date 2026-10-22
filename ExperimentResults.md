@@ -58,7 +58,9 @@ Three approaches were compared:
 
 | False-positive rate | 0% | 0% | 0% |
 
-| Unresolved scenarios flagged | 0 | 1 | 2 |
+| Unresolved scenarios flagged by the detection rule | 0 | 1 | 0 |
+
+| Unresolved outcomes correctly classified by reconciliation | N/A | N/A | 2/2 | 
 
 
 
@@ -70,7 +72,7 @@ The manually labeled 12-scenario dataset also produced 12/12 correct payment cla
 
 
 
-Within this manually constructed test dataset, reconciliation detected more labeled inconsistent scenarios than either baseline. It also flagged some scenarios with missing evidence, which should be distinguished from proven inconsistencies when interpreting detection metrics.
+Within this manually constructed test dataset, reconciliation detected all six labeled inconsistent scenarios, compared with one for receipt-only verification and two for receipt-plus-event verification. None of the four valid scenarios was incorrectly flagged by any approach. Reconciliation also correctly classified both unresolved scenarios as unresolved. These results are preliminary and demonstrate prototype behavior under controlled local conditions, not independently validated real-world accuracy.
 
 
 
