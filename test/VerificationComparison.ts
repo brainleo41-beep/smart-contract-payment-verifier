@@ -360,3 +360,51 @@ describe("Verification metrics summary", () => {
     }
   });
 });
+
+const expectedClassifications: Record<
+  string,
+  "settled" | "partially_settled" | "refunded" | "inconsistent" | "unresolved"
+> = {
+  "Consistent transfer": "settled",
+  "Consistent transfer of 250": "settled",
+  "Consistent transfer of 500": "settled",
+  "Confirmed full refund": "refunded",
+  "Incorrect event amount": "inconsistent",
+  "Balance contradicts event": "inconsistent",
+  "Sender balance decrease mismatch": "inconsistent",
+  "Partial settlement": "inconsistent",
+  "Unconfirmed refund": "inconsistent",
+  "Missing transfer event": "unresolved",
+  "Missing settlement evidence": "unresolved",
+  "Failed transaction": "inconsistent",
+};
+
+describe("Classification accuracy", () => {
+  it("compares predicted outcomes against expected classifications", () => {
+    let correct = 0;
+
+    console.log("\n=== Classification accuracy ===");
+
+    for (const scenario of scenarios) {
+      const predicted = classifyPayment(scenario);
+      const expected = expectedClassifications[scenario.name];
+      const matches = predicted === expected;
+
+      if (matches) {
+        correct++;
+      }
+
+      console.log(
+        `${scenario.name} | Expected: ${expected} | Predicted: ${predicted} | Correct: ${matches}`,
+      );
+    }
+
+    const accuracy = (correct / scenarios.length) * 100;
+
+    console.log(
+      `\nClassification accuracy: ${correct}/${scenarios.length} (${accuracy.toFixed(1)}%)`,
+    );
+
+    assert.equal(correct, scenarios.length);
+  });
+});
