@@ -103,7 +103,9 @@ export function classifyPayment(
   if (refunded !== undefined && refunded < 0n) {
     return "inconsistent";
   }
-
+if (refunded !== undefined && refunded > evidence.expectedAmount) {
+  return "inconsistent";
+}
   if (
     refundConfirmed &&
     refunded === evidence.expectedAmount &&
@@ -342,4 +344,18 @@ it("classifies contradictory evidence as inconsistent even when settlement evide
 
   assert.equal(result, "inconsistent");
 });
+});
+
+it("rejects a refund amount greater than the original payment", () => {
+  const result = classifyPayment({
+    receiptStatus: "success",
+    expectedAmount: 100n,
+    settledAmount: 0n,
+    eventAmount: 100n,
+    observedBalanceIncrease: 100n,
+    refundAmount: 150n,
+    refundConfirmed: true,
+  });
+
+  assert.equal(result, "inconsistent");
 });
