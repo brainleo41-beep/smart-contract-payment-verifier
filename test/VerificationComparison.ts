@@ -327,6 +327,15 @@ describe("Verification metrics summary", () => {
       const validTotal = scenarios.filter(
         (s) => s.groundTruth === "valid",
       ).length;
+const unresolvedTotal = scenarios.filter(
+  (s) => s.groundTruth === "unresolved",
+).length;
+
+const unresolvedCorrectlyClassified = scenarios.filter(
+  (s) =>
+    s.groundTruth === "unresolved" &&
+    classifyPayment(s) === "unresolved",
+).length;
 
       const detectionRate =
         inconsistentTotal === 0
@@ -354,6 +363,11 @@ describe("Verification metrics summary", () => {
       console.log(
         `Unresolved scenarios flagged: ${unresolvedFlagged}`,
       );
+if (approach.name === "Reconciliation") {
+  console.log(
+    `Unresolved outcomes correctly classified: ${unresolvedCorrectlyClassified}/${unresolvedTotal}`,
+  );
+}
     }
   });
 });
