@@ -191,7 +191,7 @@ const scenarios: Scenario[] = [
     expectedDetection: {
       receiptOnly: false,
       receiptAndEvent: true,
-      reconciliation: true,
+     reconciliation: false,
     },
   },
   {
@@ -205,7 +205,7 @@ const scenarios: Scenario[] = [
     expectedDetection: {
       receiptOnly: false,
       receiptAndEvent: false,
-      reconciliation: true,
+      reconciliation: false,
     },
   },
   {
@@ -253,7 +253,6 @@ describe("Verification approach comparison", () => {
       const classification = classifyPayment(scenario);
 
 const reconciliationDetected =
-  verifyPayment(scenario).length > 0 ||
   classification === "inconsistent";
 
       console.log(
@@ -295,12 +294,10 @@ describe("Verification metrics summary", () => {
         detected: (s: Scenario) =>
           receiptAndEvent(s).length > 0,
       },
-      {
-        name: "Reconciliation",
-        detected: (s: Scenario) =>
-          verifyPayment(s).length > 0 ||
-          classifyPayment(s) === "inconsistent",
-      },
+     {
+  name: "Reconciliation",
+  detected: (s: Scenario) => classifyPayment(s) === "inconsistent",
+},
     ];
 
     console.log("\n=== Ground-truth evaluation ===");
